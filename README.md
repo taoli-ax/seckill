@@ -7,7 +7,7 @@
 1. 建立一个Spring项目和`pom.xml`
 2. 配置数据库 `application.properties`
 3. 添加配置类注入`@SpringbootApplication` 和 `@MapperScan`
-4. 配置`generatorConfig.xml`,并运`generatorSqlmap`行生成 -mappers/和 -PO/
+4. 配置`generatorConfig.xml`,并运行`generatorSqlmap`逆向生成 -mappers/和 -PO/
 5. 编写Dao的接口和实现类，进一步封装Mapper类
 6. 编写`DaoTest` 测试`seckillActivityMapper` 和 `seckillActivityDao`
 
@@ -56,3 +56,18 @@ Q&A:
     - HTTP 响应头包括 Content-Type属性要设为application/json,请求头包括Accept: application/json
     - 发生错误时，不要返回 200 状态码
     - 根域名提供所有链接 HATEOAS
+
+### day-3
+1. jmeter发送100次请求，抢购100件商品，结果令人费解：
+   - 100次请求都成功了
+   - 商品还剩83件
+   - 所有响应成功能代表接口没问题？ 不能，显然系统抗住了请求，但是逻辑上有问题！
+
+2. 100次请求每个用户都说自己抢到了商品，但是库存对不上，这就导致了OverSell问题！
+3. 解决方法是加入redis,用Lua脚本控制库存，配置
+   - 添加`jedis`到pom
+   - 增加`JedisConfig` 配置类 实现 `@Bean` 控制 `redisFactory`方法
+   - 增加`RedisService` set get方法
+4. 一顿操作猛如虎，看看有没有效果
+   - jmeter 发起110次请求，redis库存100变为0，有10个用户抢购失败，100个用户抢购成功，数据库还是100
+   - 成功！Lua不但解决库存扣减问题，还保护了数据库
