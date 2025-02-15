@@ -48,5 +48,18 @@ serverTimezone=GMT"
                enableUpdateByExample="false" selectByExampleQueryId="false">
 
         </table>
+        <table schema="" tableName="seckill_user"
+               domainObjectName="SeckillUser" enableDeleteByExample="false"
+               enableSelectByExample="false" enableUpdateByExample="false"
+               enableCountByExample="false" selectByExampleQueryId="false">
+
+        </table>
+        <table schema="" tableName="seckill_order"
+               domainObjectName="SeckillOrder" enableDeleteByExample="false"
+               enableSelectByExample="false" enableUpdateByExample="false"
+               enableCountByExample="false" selectByExampleQueryId="false">
+
+        </table>
+
     </context>
 </generatorConfiguration>
