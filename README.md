@@ -71,3 +71,48 @@ Q&A:
 4. 一顿操作猛如虎，看看有没有效果
    - jmeter 发起110次请求，redis库存100变为0，有10个用户抢购失败，100个用户抢购成功，数据库还是100
    - 成功！Lua不但解决库存扣减问题，还保护了数据库
+
+### day-4
+`vagrant ssh ed769b3` 连接虚拟机
+
+1. rocketmq commands:
+   无脑启动broker和namesrv
+```shell
+### start namesrv
+$ nohup sh bin/mqnamesrv &
+
+### verify namesrv
+$ tail -f ~/logs/rocketmqlogs/namesrv.log
+The Name Server boot success...
+
+### start broker
+$ nohup sh bin/mqbroker -n localhost:9876 &
+
+### verify broker
+$ tail -f ~/logs/rocketmqlogs/broker.log 
+The broker[broker-a,192.169.1.2:10911] boot success...
+```
+检查日志出现指定文字
+```shell
+ grep -i --color " The Name Server boot success. serializeType=JSON"  ~/logs/rocketmqlogs/namesrv.log
+```
+关闭namesrv , broker
+```shell
+
+$ sh bin/mqshutdown broker
+The mqbroker(36695) is running...
+Send shutdown request to mqbroker(36695) OK
+
+$ sh bin/mqshutdown namesrv
+The mqnamesrv(36664) is running...
+Send shutdown request to mqnamesrv(36664) OK
+```
+
+2. debug: 远程服务器的namesrv , broker都启动正常，监听端口9876和10911也正常，为什么本地client发送的消息失败，报错
+   `Caused by: org.apache.rocketmq.remoting.exception.RemotingConnectException:
+   connect to 127.0.0.1:10911 failed`
+   原因: `conf/broker.conf`配置的IP1是本地回环127.0.0.1导致客户机连接了本地的127.0.0.1而不是服务的Host,
+   应该配置为服务器的公网IP或者vagrant定义的IP `192.168.33.10`
+
+
+   
