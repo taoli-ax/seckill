@@ -119,7 +119,6 @@ Send shutdown request to mqnamesrv(36664) OK
    client 监听消息时同样先问namesrv种的broker地址，然后从broker拉取消息
    为什么要查询呢，因为broker每隔一段时间向namesrv报告自己的位置
    namesrv有broker路由信息和topic信息可供查询
-   
 
 ### day-5
 1. 创建订单系统
@@ -130,7 +129,7 @@ Send shutdown request to mqnamesrv(36664) OK
    - 左移量，TimeStamp 最大， Sequence不需要动
    - 占位 TimeStamp 22, DataCenter 5, Machine 5
    - 构造方法参数 datacenterId, machineId
-   - 异步线程锁定方法 syncrinized nextId()
+   - 异步线程锁定方法 synchronized nextId()
       - 从当前的毫秒开始计算
       - 如果同一个millsecond内创建了两次，那么sequence+1
         - 再如果sequence达到最大值则归零，并等待下一毫秒到来
