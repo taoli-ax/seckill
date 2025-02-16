@@ -168,4 +168,10 @@
     from seckill_activity
     where activity_status = #{id,jdbcType=SMALLINT}
   </select>
+
+  <update id="deductStock" parameterType="java.lang.Long">
+    update seckill_jiuzhang.seckill_activity
+    set lock_stock = lock_stock - 1
+    where id = #{id,jdbcType=BIGINT} and lock_stock > 0
+  </update>
 </mapper>

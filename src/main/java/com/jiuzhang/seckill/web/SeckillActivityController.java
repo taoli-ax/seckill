@@ -2,6 +2,7 @@ package com.jiuzhang.seckill.web;
 
 import com.jiuzhang.seckill.db.dao.SeckillActivityDao;
 import com.jiuzhang.seckill.db.dao.SeckillCommodityDao;
+import com.jiuzhang.seckill.db.dao.SeckillOrderDao;
 import com.jiuzhang.seckill.db.po.SeckillActivity;
 import com.jiuzhang.seckill.db.po.SeckillCommodity;
 import com.jiuzhang.seckill.db.po.SeckillOrder;
@@ -37,6 +38,9 @@ public class SeckillActivityController {
 
     @Autowired
     private SeckillActivityDao seckillActivityDao;
+
+    @Autowired
+    private SeckillOrderDao seckillOrderDao;
 
 //    @ResponseBody
     @RequestMapping("/addSeckillActivityAction")
@@ -117,5 +121,26 @@ public class SeckillActivityController {
         }
         modelAndView.setViewName("seckill_result");
         return modelAndView;
+    }
+
+    @RequestMapping("/seckill/orderQuery/{orderNo}")
+    public ModelAndView querySeckillOrder(@PathVariable String orderNo) {
+        ModelAndView modelAndView = new ModelAndView();
+        SeckillOrder seckillOrder = seckillOrderDao.queryOrder(orderNo);
+        if (seckillOrder != null) {
+            modelAndView.setViewName("order");
+            modelAndView.addObject("order", seckillOrder);
+            SeckillActivity seckillActivity = seckillActivityDao.querySeckillActivityById(seckillOrder.getSeckillActivityId());
+            modelAndView.addObject("seckillActivity", seckillActivity);
+        }else {
+            modelAndView.setViewName("order_wait");
+        }
+        return modelAndView;
+    }
+
+    @RequestMapping("/seckill/payOrder/{orderNo}")
+    public String paySeckillOrder(@PathVariable String orderNo) {
+        seckillActivityService.payOrderProcess(orderNo);
+        return "redirect:/seckill/orderQuery/" + orderNo;
     }
 }
