@@ -108,11 +108,40 @@ The mqnamesrv(36664) is running...
 Send shutdown request to mqnamesrv(36664) OK
 ```
 
-2. debug: 远程服务器的namesrv , broker都启动正常，监听端口9876和10911也正常，为什么本地client发送的消息失败，报错
-   `Caused by: org.apache.rocketmq.remoting.exception.RemotingConnectException:
+2. debug: 远程服务器的namesrv , broker都启动正常，监听端口9876和10911也正常，为什么本地client发送的消息失败，
+   - 报错:`Caused by: org.apache.rocketmq.remoting.exception.RemotingConnectException:
    connect to 127.0.0.1:10911 failed`
-   原因: `conf/broker.conf`配置的IP1是本地回环127.0.0.1导致客户机连接了本地的127.0.0.1而不是服务的Host,
+   - 原因: `conf/broker.conf`配置的IP1是本地回环127.0.0.1导致客户机连接了本地的127.0.0.1而不是服务的Host,
    应该配置为服务器的公网IP或者vagrant定义的IP `192.168.33.10`
 
-
+3. namesrv broker client这三者是什么关系？
+   client 发送消息时先查询namesrv种的broker地址，然后发给broker
+   client 监听消息时同样先问namesrv种的broker地址，然后从broker拉取消息
+   为什么要查询呢，因为broker每隔一段时间向namesrv报告自己的位置
+   namesrv有broker路由信息和topic信息可供查询
    
+
+### day-5
+1. 创建订单系统
+2. 雪花算法
+   - 选择一个任意时间戳
+   - 位运算，与或，抑或运算
+   - 4个部分组成，TimeStamp,DataCenter,Machine,Sequence
+   - 左移量，TimeStamp 最大， Sequence不需要动
+   - 占位 TimeStamp 22, DataCenter 5, Machine 5
+   - 构造方法参数 datacenterId, machineId
+   - 异步线程锁定方法 syncrinized nextId()
+      - 从当前的毫秒开始计算
+      - 如果同一个millsecond内创建了两次，那么sequence+1
+        - 再如果sequence达到最大值则归零，并等待下一毫秒到来
+      - 如果不是同一毫秒内创建的请求，sequence直接从0开始计算
+        - 返回TimeStamp<<22 | datacenter<5 | machineId <<5 | sequence
+   Q: 为什么最后要用按位或|
+   A: 因为或运算能够无损合并数据
+3. Dao,Mapper,Mapper.xml,添加了lockStock方法
+```sql
+update seckill_order set avaliable_stock= avaliable_stock-1, lock_stock = lock_stock + 1 where avaliable_stock>0
+```
+4. Controller `seckill/buy/userId/activityId`
+5. Service  `createOrder`+ `RocketMQSerivce.sendMessage`
+6. Rocket `OrderConsumer`锁定库存并推进订单状态为待付款
