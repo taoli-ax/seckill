@@ -16,4 +16,6 @@ public interface SeckillOrderMapper {
     int updateByPrimaryKey(SeckillOrder record);
 
     SeckillOrder selectByOrderNo(String orderNo);
+
+    int lockStock(Long id);
 }
